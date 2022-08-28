@@ -56,21 +56,24 @@ def main():
 
     # define callback for selecting checkpoints during training
     checkpoint_callback = ModelCheckpoint(
-        filepath=log_dir + "/lightning_logs/checkpoints/{epoch}_{val_loss}",
+        dirpath=log_dir+"/lightning_logs/checkpoints/",
+        filename='{epoch}_{val_loss:.2E}_{train_loss:.2E}',
         verbose=True,
         monitor='val_loss',
         mode='min',
-        prefix='')
+        save_top_k = 100,
+        save_last = True,
+        )
 
     # define trainer
-    trainer = Trainer(gpus=cfg.num_gpus,
+    trainer = Trainer(
                       max_epochs=cfg.epochs,
                       deterministic=True,
-                      accelerator='ddp',
+                      accelerator='cuda', devices=cfg.num_gpus,
                       amp_backend='native',
                       default_root_dir=log_dir,
                       val_check_interval=1.0,
-                      checkpoint_callback=checkpoint_callback)
+                      callbacks=[checkpoint_callback])
 
     trainer.fit(model)
 
@@ -108,21 +111,24 @@ def main_latentpred():
 
     # define callback for selecting checkpoints during training
     checkpoint_callback = ModelCheckpoint(
+        filename='{epoch}_{val_loss:.2E}_{train_loss:.2E}',
         filepath=log_dir + "/lightning_logs/checkpoints/{epoch}_{val_loss}",
         verbose=True,
         monitor='val_loss',
         mode='min',
-        prefix='')
+        save_top_k = 100,
+        save_last = True,
+        )
 
     # define trainer
-    trainer = Trainer(gpus=cfg.num_gpus,
+    trainer = Trainer(
                       max_epochs=cfg.epochs,
                       deterministic=True,
-                      accelerator='ddp',
+                      accelerator='cuda', devices=cfg.num_gpus,
                       amp_backend='native',
                       default_root_dir=log_dir,
                       val_check_interval=1.0,
-                      checkpoint_callback=checkpoint_callback)
+                      callbacks=[checkpoint_callback])
 
     trainer.fit(model)
 

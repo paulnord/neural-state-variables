@@ -1,0 +1,9 @@
+--extra-index-url https://download.pytorch.org/whl/nightly/cu117
+torch>=1.13.0.dev20220827+cu117
+torchaudio>=0.13.0.dev20220827+cu117
+torchfile>=0.1.0
+torchmetrics>=0.9.3
+torchvision>=0.14.0.dev20220827+cu117
+munch>=2.5.0
+pytorch-lightning>=1.7.3
+scipy>=1.9.1
