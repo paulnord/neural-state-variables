@@ -40,7 +40,7 @@ def seed(cfg):
 def main():
     config_filepath = str(sys.argv[1])
     checkpoint_filepath = str(sys.argv[2])
-    checkpoint_filepath = glob.glob(os.path.join(checkpoint_filepath, '*.ckpt'))[0]
+    checkpoint_filepath = glob.glob(os.path.join(checkpoint_filepath, 'last.ckpt'))[0]
     cfg = load_config(filepath=config_filepath)
     pprint.pprint(cfg)
     cfg = munchify(cfg)
@@ -73,7 +73,7 @@ def main():
         model.model.load_state_dict(ckpt)
 
         high_dim_checkpoint_filepath = str(sys.argv[3])
-        high_dim_checkpoint_filepath = glob.glob(os.path.join(high_dim_checkpoint_filepath, '*.ckpt'))[0]
+        high_dim_checkpoint_filepath = glob.glob(os.path.join(high_dim_checkpoint_filepath, 'last.ckpt'))[0]
         ckpt = torch.load(high_dim_checkpoint_filepath)
         ckpt = rename_ckpt_for_multi_models(ckpt)
         model.high_dim_model.load_state_dict(ckpt)
@@ -155,7 +155,7 @@ def rename_ckpt_for_multi_models(ckpt):
 def gather_latent_from_trained_high_dim_model():
     config_filepath = str(sys.argv[1])
     checkpoint_filepath = str(sys.argv[2])
-    checkpoint_filepath = glob.glob(os.path.join(checkpoint_filepath, '*.ckpt'))[0]
+    checkpoint_filepath = glob.glob(os.path.join(checkpoint_filepath, 'last.ckpt'))[0]
     cfg = load_config(filepath=config_filepath)
     pprint.pprint(cfg)
     cfg = munchify(cfg)
@@ -213,6 +213,10 @@ def gather_latent_from_trained_high_dim_model():
     all_latents = []
     var_log_dir = os.path.join(log_dir, 'variables')
     for batch_idx, (data, target, filepath) in enumerate(tqdm(train_loader)):
+        if cfg.model_name == 'encoder-decoder-pmn':
+            output, latent = model.model(data.cuda())
+        if cfg.model_name == 'encoder-decoder-64-pmn':
+            output, latent = model.model(data.cuda(), data.cuda(), False)
         if cfg.model_name == 'encoder-decoder':
             output, latent = model.model(data.cuda())
         if cfg.model_name == 'encoder-decoder-64':
@@ -233,6 +237,10 @@ def gather_latent_from_trained_high_dim_model():
     all_latents = []
     var_log_dir = os.path.join(log_dir, 'variables')
     for batch_idx, (data, target, filepath) in enumerate(tqdm(val_loader)):
+        if cfg.model_name == 'encoder-decoder-pmn':
+            output, latent = model.model(data.cuda())                           
+        if cfg.model_name == 'encoder-decoder-64-pmn':
+            output, latent = model.model(data.cuda(), data.cuda(), False)
         if cfg.model_name == 'encoder-decoder':
             output, latent = model.model(data.cuda())
         if cfg.model_name == 'encoder-decoder-64':
@@ -253,7 +261,7 @@ def gather_latent_from_trained_high_dim_model():
 def gather_latent_from_trained_refine_model():
     config_filepath = str(sys.argv[1])
     checkpoint_filepath = str(sys.argv[2])
-    checkpoint_filepath = glob.glob(os.path.join(checkpoint_filepath, '*.ckpt'))[0]
+    checkpoint_filepath = glob.glob(os.path.join(checkpoint_filepath, 'last.ckpt'))[0]
     cfg = load_config(filepath=config_filepath)
     pprint.pprint(cfg)
     cfg = munchify(cfg)
@@ -284,7 +292,7 @@ def gather_latent_from_trained_refine_model():
     ckpt = rename_ckpt_for_multi_models(ckpt)
     model.model.load_state_dict(ckpt)
     high_dim_checkpoint_filepath = str(sys.argv[3])
-    high_dim_checkpoint_filepath = glob.glob(os.path.join(high_dim_checkpoint_filepath, '*.ckpt'))[0]
+    high_dim_checkpoint_filepath = glob.glob(os.path.join(high_dim_checkpoint_filepath, 'last.ckpt'))[0]
     ckpt = torch.load(high_dim_checkpoint_filepath)
     ckpt = rename_ckpt_for_multi_models(ckpt)
     model.high_dim_model.load_state_dict(ckpt)

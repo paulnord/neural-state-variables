@@ -31,6 +31,43 @@ def mkdir(folder):
         shutil.rmtree(folder)
     os.makedirs(folder)
 
+class VGGPerceptualLoss(torch.nn.Module):
+    def __init__(self, resize=True):
+        super(VGGPerceptualLoss, self).__init__()
+        blocks = []
+        blocks.append(torchvision.models.vgg16(pretrained=True).features[:4].eval())
+        blocks.append(torchvision.models.vgg16(pretrained=True).features[4:9].eval())
+        blocks.append(torchvision.models.vgg16(pretrained=True).features[9:16].eval())
+        blocks.append(torchvision.models.vgg16(pretrained=True).features[16:23].eval())
+        for bl in blocks:
+            for p in bl.parameters():
+                p.requires_grad = False
+
+        self.blocks = torch.nn.ModuleList(blocks)
+        self.transform = torch.nn.functional.interpolate
+        self.mean = torch.nn.Parameter(torch.tensor([0.485, 0.456, 0.406], device='cuda').view(1,3,1,1))
+        self.std = torch.nn.Parameter(torch.tensor([0.229, 0.224, 0.225], device='cuda').view(1,3,1,1))
+        self.resize = resize
+
+    def forward(self, input, target):
+        if input.shape[1] != 3:
+            input = input.repeat(1, 3, 1, 1)
+            target = target.repeat(1, 3, 1, 1)
+        input = (input-self.mean) / self.std
+        target = (target-self.mean) / self.std
+        if self.resize:
+            input = self.transform(input, mode='bilinear', size=(224, 224), align_corners=False)
+            target = self.transform(target, mode='bilinear', size=(224, 224), align_corners=False)
+        loss = 0.0
+        x = input
+        y = target
+        for block in self.blocks:
+            x = block(x)
+            y = block(y)
+            loss += torch.nn.functional.l1_loss(x, y)
+        return loss
+
+
 class VisDynamicsModel(pl.LightningModule):
 
     def __init__(self,
@@ -40,9 +77,9 @@ class VisDynamicsModel(pl.LightningModule):
                  if_test: bool=False,
                  gamma: float=0.5,
                  log_dir: str='logs',
-                 train_batch: int=512,
-                 val_batch: int=256,
-                 test_batch: int=256,
+                 train_batch: int=128,
+                 val_batch: int=128,
+                 test_batch: int=128,
                  num_workers: int=8,
                  model_name: str='encoder-decoder-64',
                  data_filepath: str='data',
@@ -61,7 +98,17 @@ class VisDynamicsModel(pl.LightningModule):
         self.__build_model()
 
     def __build_model(self):
+        # loss                      
+        self.loss_func = nn.MSELoss()  
+        self.alt_loss_func = nn.MSELoss()
+
         # model
+        if self.hparams.model_name == 'encoder-decoder-pmn':
+            self.model = EncoderDecoder(in_channels=3)
+            self.loss_func = VGGPerceptualLoss(resize=True)
+        if self.hparams.model_name == 'encoder-decoder-64-pmn':
+            self.model = EncoderDecoder64x1x1(in_channels=3)
+            self.loss_func = VGGPerceptualLoss(resize=False)
         if self.hparams.model_name == 'encoder-decoder':
             self.model = EncoderDecoder(in_channels=3)
         if self.hparams.model_name == 'encoder-decoder-64':
@@ -86,13 +133,15 @@ class VisDynamicsModel(pl.LightningModule):
             self.model = RefineReactionDiffusionModel(in_channels=64)
         if 'refine' in self.hparams.model_name and self.hparams.if_test:
             self.high_dim_model = EncoderDecoder64x1x1(in_channels=3)
-        # loss
-        self.loss_func = nn.MSELoss()
 
     def train_forward(self, x):
         if self.hparams.model_name == 'encoder-decoder' or 'refine' in self.hparams.model_name:
             output, latent = self.model(x)
         if self.hparams.model_name == 'encoder-decoder-64':
+            output, latent = self.model(x, x, False)
+        if self.hparams.model_name == 'encoder-decoder-pmn' or 'refine' in self.hparams.model_name:
+            output, latent = self.model(x)
+        if self.hparams.model_name == 'encoder-decoder-64-pmn':
             output, latent = self.model(x, x, False)
         return output, latent
 
@@ -109,13 +158,19 @@ class VisDynamicsModel(pl.LightningModule):
         output, latent = self.train_forward(data)
 
         val_loss = self.loss_func(output, target)
+        mse_loss = self.alt_loss_func(output, target)
+        self.log('mse_loss', mse_loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         self.log('val_loss', val_loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return val_loss
 
     def test_step(self, batch, batch_idx):
         
-        if self.hparams.model_name == 'encoder-decoder' or self.hparams.model_name == 'encoder-decoder-64':
+        if 'encoder-decoder' in self.hparams.model_name:
             data, target, filepath = batch
+            if self.hparams.model_name == 'encoder-decoder-pmn':
+                output, latent = self.model(data)
+            if self.hparams.model_name == 'encoder-decoder-64-pmn':
+                output, latent = self.model(data, data, False)
             if self.hparams.model_name == 'encoder-decoder':
                 output, latent = self.model(data)
             if self.hparams.model_name == 'encoder-decoder-64':
@@ -171,9 +226,12 @@ class VisDynamicsModel(pl.LightningModule):
 
 
     def test_save(self):
-        if self.hparams.model_name == 'encoder-decoder' or self.hparams.model_name == 'encoder-decoder-64':
+        if 'encoder-decoder' in self.hparams.model_name:
+            print("******** saving hparams.model_name: ", self.hparams.model_name)
             np.save(os.path.join(self.var_log_dir, 'ids.npy'), self.all_filepaths)
             np.save(os.path.join(self.var_log_dir, 'latent.npy'), self.all_latents)
+        else:                               
+            print("******** NOT saving hparams.model_name: ", self.hparams.model_name)
         if 'refine' in self.hparams.model_name:
             np.save(os.path.join(self.var_log_dir, 'ids.npy'), self.all_filepaths)
             np.save(os.path.join(self.var_log_dir, 'latent.npy'), self.all_latents)
