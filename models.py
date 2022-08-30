@@ -1,6 +1,7 @@
 
 import os
 import torch
+import torchvision
 import shutil
 import numpy as np
 from torch import nn
