@@ -7,3 +7,4 @@ torchvision>=0.14.0.dev20220827+cu117
 munch>=2.5.0
 pytorch-lightning>=1.7.3
 scipy>=1.9.1
+tensorflow>=2.9.1
