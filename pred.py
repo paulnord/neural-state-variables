@@ -65,7 +65,7 @@ def model_rollout():
     seed(cfg)
     seed_everything(cfg.seed)
 
-    log_dir = '_'.join([cfg.log_dir,
+    log_dir = '_'.join(["logs/"+cfg.log_dir,
                         cfg.dataset,
                         cfg.model_name,
                         str(cfg.seed)])
@@ -221,7 +221,7 @@ def model_rollout_hybrid(step):
     if 'refine' not in cfg.model_name:
         assert False, "the hybrid scheme is only supported with refine model..."
 
-    log_dir = '_'.join([cfg.log_dir,
+    log_dir = '_'.join(["logs/"+cfg.log_dir,
                         cfg.dataset,
                         cfg.model_name,
                         str(cfg.seed)])
@@ -324,7 +324,7 @@ def model_rollout_perturb(perturb_type, perturb_level):
     seed(cfg)
     seed_everything(cfg.seed)
 
-    log_dir = '_'.join([cfg.log_dir,
+    log_dir = '_'.join(["logs/"+cfg.log_dir,
                         cfg.dataset,
                         cfg.model_name,
                         str(cfg.seed)])
