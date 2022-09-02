@@ -47,7 +47,7 @@ def main():
     seed(cfg)
     seed_everything(cfg.seed)
 
-    log_dir = '_'.join([cfg.log_dir,
+    log_dir = '_'.join(["logs/"+cfg.log_dir,
                         cfg.dataset,
                         cfg.model_name,
                         str(cfg.seed)])
@@ -106,7 +106,7 @@ def main_latentpred():
     seed(cfg)
     seed_everything(cfg.seed)
 
-    log_dir = '_'.join([cfg.log_dir,
+    log_dir = '_'.join(["logs/"+cfg.log_dir,
                         cfg.dataset,
                         cfg.model_name,
                         str(cfg.seed)])
@@ -162,7 +162,7 @@ def gather_latent_from_trained_high_dim_model():
     seed(cfg)
     seed_everything(cfg.seed)
 
-    log_dir = '_'.join([cfg.log_dir,
+    log_dir = '_'.join(["logs/"+cfg.log_dir,
                         cfg.dataset,
                         cfg.model_name,
                         str(cfg.seed)])
@@ -268,7 +268,7 @@ def gather_latent_from_trained_refine_model():
     seed(cfg)
     seed_everything(cfg.seed)
 
-    log_dir = '_'.join([cfg.log_dir,
+    log_dir = '_'.join(["logs/"+cfg.log_dir,
                         cfg.dataset,
                         cfg.model_name,
                         str(cfg.seed)])

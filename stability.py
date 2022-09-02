@@ -58,7 +58,7 @@ def main():
     seed(cfg)
     seed_everything(cfg.seed)
 
-    log_dir = '_'.join([cfg.log_dir,
+    log_dir = '_'.join(["logs/"+cfg.log_dir,
                         cfg.dataset,
                         cfg.model_name,
                         str(cfg.seed)])
