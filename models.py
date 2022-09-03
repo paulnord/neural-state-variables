@@ -6,6 +6,8 @@ import shutil
 import numpy as np
 from torch import nn
 import pytorch_lightning as pl
+import torch
+import torchvision
 import torch.nn.functional as F
 from torchvision import transforms
 import torchvision.models as models
@@ -13,6 +15,8 @@ from collections import OrderedDict
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 from dataset import NeuralPhysDataset
+#from torchmetrics import StructuralSimilarityIndexMeasure
+from torchmetrics.functional import structural_similarity_index_measure
 from model_utils import (EncoderDecoder,
                          EncoderDecoder64x1x1,
                          RefineDoublePendulumModel,
@@ -102,6 +106,8 @@ class VisDynamicsModel(pl.LightningModule):
         # loss                      
         self.loss_func = nn.MSELoss()  
         self.alt_loss_func = nn.MSELoss()
+        #self.ssim = StructuralSimilarityIndexMeasure()
+        self.ssim = structural_similarity_index_measure
 
         # model
         if self.hparams.model_name == 'encoder-decoder-pmn':
@@ -160,8 +166,10 @@ class VisDynamicsModel(pl.LightningModule):
 
         val_loss = self.loss_func(output, target)
         mse_loss = self.alt_loss_func(output, target)
+        ssim_loss = 1-self.ssim(output, target)
         self.log('mse_loss', mse_loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         self.log('val_loss', val_loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('ssim_loss', ssim_loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         return val_loss
 
     def test_step(self, batch, batch_idx):
