@@ -31,14 +31,35 @@ fi
 
 
 ## Fix the filenames which contain single digits (eg. 44_2.png -> 44_02.png)
-RUNS=`ls *_?.png`
+RUNS=`ls *_?.png *_?.jpg`
 
 for i in ${RUNS}
   do
         echo echo Entry: $i
         split1=`echo $i | cut -f1 -d"_" `
         split2=`echo $i | cut -f2 -d"_" `
-        split3=`echo $i | cut -f1 -d"." `
+        fullCMD="mv "${i}" "${split1}"_0"${split2}
+        `$fullCMD`
+done
+
+RUNS=`ls *_??.png *_??.jpg`
+
+for i in ${RUNS}
+  do
+        echo echo Entry: $i
+        split1=`echo $i | cut -f1 -d"_" `
+        split2=`echo $i | cut -f2 -d"_" `
+        fullCMD="mv "${i}" "${split1}"_0"${split2}
+        `$fullCMD`
+done
+
+RUNS=`ls *_???.png *_???.jpg`
+
+for i in ${RUNS}
+  do
+        echo echo Entry: $i
+        split1=`echo $i | cut -f1 -d"_" `
+        split2=`echo $i | cut -f2 -d"_" `
         fullCMD="mv "${i}" "${split1}"_0"${split2}
         `$fullCMD`
 done
@@ -46,7 +67,7 @@ done
 
 ## Create videos for each set of images
 
-RUNS=`ls *png`
+RUNS=`ls *png *jpg`
 
 arrVar=()
 for i in ${RUNS}
@@ -74,7 +95,7 @@ echo echo "got list of files " $arrVar
 for i in ${arrVar[@]}
   do
         echo echo creating: ${i}.mpg
-	fullCMD="convert -delay 1 "${i}_*.png" "${i}.mpg
+	fullCMD="convert -delay 1 "${i}_*" "${i}.mpg
         `$fullCMD`
 done
 
@@ -119,10 +140,10 @@ for ((x=0;x<8;x++)); do
 	group=`echo ${subArray// /|}`
 	echo ${group}
 	outputFile="output"${x}".mpg"
-	ffmpeg -y -loglevel quiet -vb 20M -i concat:"${group}" ${outputFile}
+	ffmpeg -y -vb 20M -i concat:"${group}" ${outputFile}
 done
 
-ffmpeg -y -loglevel quiet -i output0.mpg -i output1.mpg \
+ffmpeg -y -i output0.mpg -i output1.mpg \
 -i output2.mpg -i output3.mpg \
 -i output4.mpg -i output5.mpg \
 -i output6.mpg -i output7.mpg \
