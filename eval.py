@@ -39,7 +39,8 @@ def seed(cfg):
 
 def main():
     config_filepath = str(sys.argv[1])
-    checkpoint_filepath = str(sys.argv[2])
+    checkpoint_filepath = "logs/"+str(sys.argv[2])
+    print("********* chckpoing_filepath: ",checkpoint_filepath)
     checkpoint_filepath = glob.glob(os.path.join(checkpoint_filepath, 'last.ckpt'))[0]
     cfg = load_config(filepath=config_filepath)
     pprint.pprint(cfg)
@@ -155,6 +156,7 @@ def rename_ckpt_for_multi_models(ckpt):
 def gather_latent_from_trained_high_dim_model():
     config_filepath = str(sys.argv[1])
     checkpoint_filepath = str(sys.argv[2])
+    print("********** checkpoint_filepath: ",checkpoint_filepath)
     checkpoint_filepath = glob.glob(os.path.join(checkpoint_filepath, 'last.ckpt'))[0]
     cfg = load_config(filepath=config_filepath)
     pprint.pprint(cfg)
