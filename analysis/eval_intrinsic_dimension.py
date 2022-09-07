@@ -83,7 +83,7 @@ if __name__ == '__main__':
     if_all_methods = (str(sys.argv[3]) == 'all-methods')
     
     if str(sys.argv[2]) == 'model-latent':
-        log_dir = '_'.join([cfg.log_dir, cfg.dataset, cfg.model_name, str(cfg.seed)])
+        log_dir = "logs/"+'_'.join([cfg.log_dir, cfg.dataset, cfg.model_name, str(cfg.seed)])
         vars_filepath = os.path.join(log_dir, 'variables')
         if_refine = ('refine' in cfg.model_name)
         dims = eval_id_latent(vars_filepath, if_refine, if_all_methods)
@@ -93,7 +93,7 @@ if __name__ == '__main__':
         with open(os.path.join('../datainfo', cfg.dataset, f'data_split_dict_{cfg.seed}.json'), 'r') as file:
             seq_dict = json.load(file)
         test_vid_ids = seq_dict['test']
-        log_dir = '_'.join([cfg.log_dir, cfg.dataset, cfg.model_name, str(cfg.seed)])
+        log_dir = "logs/"+'_'.join([cfg.log_dir, cfg.dataset, cfg.model_name, str(cfg.seed)])
         vars_filepath = os.path.join(log_dir, 'variables')
         dims = eval_id_image(data_filepath, test_vid_ids, vars_filepath, if_all_methods)
     
