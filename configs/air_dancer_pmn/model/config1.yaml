@@ -3,9 +3,9 @@ seed: 1
 if_cuda: True
 gamma: 0.5
 log_dir: 'logs'
-train_batch: 64
-val_batch: 64
-test_batch: 64
+train_batch: 32
+val_batch: 32
+test_batch: 32
 num_workers: 8
 model_name: 'encoder-decoder-pmn'
 data_filepath: './data/'

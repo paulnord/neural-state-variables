@@ -7,9 +7,9 @@ train_batch: 64
 val_batch: 64
 test_batch: 64
 num_workers: 8
-model_name: 'encoder-decoder-64i-pmn'
+model_name: 'encoder-decoder-64-pmn'
 data_filepath: './data/'
 dataset: 'air_dancer'
-lr_schedule: [100, 200, 300]
+lr_schedule: [20, 40, 60]
 num_gpus: 1
-epochs: 500
+epochs: 100
