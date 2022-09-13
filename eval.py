@@ -215,6 +215,10 @@ def gather_latent_from_trained_high_dim_model():
     all_latents = []
     var_log_dir = os.path.join(log_dir, 'variables')
     for batch_idx, (data, target, filepath) in enumerate(tqdm(train_loader)):
+        if cfg.model_name == 'encoder-decoder-pmn2':
+            output, latent = model.model(data.cuda())
+        if cfg.model_name == 'encoder-decoder-64-pmn2':
+            output, latent = model.model(data.cuda(), data.cuda(), False)
         if cfg.model_name == 'encoder-decoder-pmn':
             output, latent = model.model(data.cuda())
         if cfg.model_name == 'encoder-decoder-64-pmn':
@@ -239,6 +243,10 @@ def gather_latent_from_trained_high_dim_model():
     all_latents = []
     var_log_dir = os.path.join(log_dir, 'variables')
     for batch_idx, (data, target, filepath) in enumerate(tqdm(val_loader)):
+        if cfg.model_name == 'encoder-decoder-pmn2':
+            output, latent = model.model(data.cuda())                           
+        if cfg.model_name == 'encoder-decoder-64-pmn2':
+            output, latent = model.model(data.cuda(), data.cuda(), False)
         if cfg.model_name == 'encoder-decoder-pmn':
             output, latent = model.model(data.cuda())                           
         if cfg.model_name == 'encoder-decoder-64-pmn':
